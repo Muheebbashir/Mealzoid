@@ -85,6 +85,16 @@ interface RazorpayOptions {
   };
 }
 
+const loadRazorpayScript = (): Promise<void> =>
+  new Promise((resolve, reject) => {
+    if (window.Razorpay) return resolve();
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Failed to load Razorpay"));
+    document.body.appendChild(script);
+  });
+
 export const useRazorpayPayment = () => {
   const initializePayment = async (
     orderId: string,
@@ -92,6 +102,8 @@ export const useRazorpayPayment = () => {
     onSuccess: () => void
   ): Promise<void> => {
     try {
+      await loadRazorpayScript();
+
       const response: RazorpayInitResponse =
         await createRazorpayOrder(orderId);
 
